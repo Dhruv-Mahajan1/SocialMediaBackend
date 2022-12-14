@@ -36,6 +36,7 @@ class Following(models.Model):
 class Post(models.Model):
     id=models.AutoField(primary_key=True)
     postedbyuser = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="posted by")
+    title = models.CharField(max_length=100, blank=True, null=True)
     content = models.TextField(blank=False)
     date = models.DateTimeField(auto_now_add=True, null=False, blank=True, verbose_name="created on")
 
@@ -43,23 +44,28 @@ class Post(models.Model):
 
 class Comment(models.Model):
     id=models.AutoField(primary_key=True)
-    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE,related_name="comments")
     commentedbyuser= models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="commented by")
     content = models.TextField(blank=False)
     date = models.DateTimeField(auto_now_add=True, null=False, blank=True, verbose_name="commented on")
-
+    def __str__(self):
+        return f"Comment -{self.content} made by {self.commentedbyuser} on {self.date.strftime('%d %b %Y %H:%M:%S')}"
+   
 
 class Like(models.Model):
-    reactionchoices = [
-        (0,"None"),
-        (1, "like"),
-        (2, "dislike"),
-    ]
     id=models.AutoField(primary_key=True)
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, null=True, blank=True)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, null=True, blank=True,related_name="likes")
     likedbyuser = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="liked by")
-    reaction = models.IntegerField(choices=reactionchoices, default=0)
+    likes = models.IntegerField(default=0)
+    dislikes = models.IntegerField(default=0)
 
+    def __str__(self): 
+        like=""
+        if self.likes==1:
+            like="like"
+        elif self.dislikes==1:
+            like="dislike"
+        return f"{like}- {self.id} by {self.likedbyuser}"
 
     class Meta:
         verbose_name = "like"
