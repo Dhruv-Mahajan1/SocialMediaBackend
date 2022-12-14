@@ -51,16 +51,16 @@ class unfollow(APIView):
             usertounfollow = User.objects.get(username=id)
             user = User.objects.get(username=request.user.username)
         except User.DoesNotExist:
-            return Response({'status':404,'message':f"{id} doesnt exist"})
+            return Response({'message':f"{id} doesnt exist"},status=status.HTTP_404_NOT_FOUND)
         else:
             try:
                 oldfollowobject= Following.objects.get(user=user, userfollowed=usertounfollow)
                 oldfollowobject.delete()
                 
-                return Response({'status':200,'message':f"You have unfollowed {usertounfollow.username}"})
+                return Response({'status':200,'message':f"You have unfollowed {usertounfollow.username}"},status=status.HTTP_200_OK)
                 
             except Following.DoesNotExist:
-                return Response({'status':400,'message':"You already not follwing the person"})
+                return Response({'status':400,'message':"You already not follwing the person"},status=status.HTTP_400_BAD_REQUEST)
                
 
 class userprofile(APIView):
@@ -75,7 +75,7 @@ class userprofile(APIView):
         followers_user_list = User.objects.filter(id__in=followers_id_list).values('username')
         serializerfollowers_user_list=UserSerializer(followers_user_list,many=True)
         serializerfollowing_user_list=UserSerializer(following_user_list,many=True)
-        return Response({'status':200,'User Name':userdata.username,'followers':serializerfollowers_user_list.data,'following':serializerfollowing_user_list.data})
+        return Response({'status':200,'User Name':userdata.username,'followers':serializerfollowers_user_list.data,'following':serializerfollowing_user_list.data},status=status.HTTP_200_OK)
         
 
   
@@ -93,7 +93,7 @@ class PostAPIView(APIView):
             content=post_data['content']
         )
             new_post.save()
-            return Response({'Post_id':new_post.id,'title':serializer.data['title'],"content":serializer.data['content'],"Created Time":new_post.date})
+            return Response({'Post_id':new_post.id,'title':serializer.data['title'],"content":serializer.data['content'],"Created Time":new_post.date},status=status.HTTP_201_CREATED)
 
         else :
             return Response({'status':404,'message':"Something went wrong"})
